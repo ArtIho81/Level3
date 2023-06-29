@@ -19,8 +19,8 @@ app.post("/button-click", (req, res) => {
     try {
         console.log(req.body)
         const button: string = req.body.button;
-        counter[button]++ 
-        res.json({ button: counter[button] });
+        counter[button.toLowerCase()]++ 
+        res.json({ button: counter[button.toLowerCase()] });
     } catch (error) {
         console.log(error);
     }
