@@ -8,7 +8,7 @@ const enum Button {
 const plusButton = document.getElementById("plus_btn")!;
 plusButton.addEventListener("click", async () => {
   const clicks = await sendRequest(Button.Plus);
-  plusButton.textContent = `${Button.Plus} ${clicks} 12`;
+  plusButton.textContent = `${Button.Plus} ${clicks}`;
 });
 
 const minusButton = document.getElementById("minus_btn")!;
