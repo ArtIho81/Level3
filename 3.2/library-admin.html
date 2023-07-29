@@ -13,7 +13,7 @@
     <title>Library Admin</title>
 </head>
 <body>
-    <h1>Библиотека</h1>
+    <h1>Библиотека <button>Выйти</button></h1>
         <table style="border: 1px; border-color: black; border-style: solid;">
       <thead>
         <tr>
@@ -24,9 +24,9 @@
       </thead>
       <tbody>
         <tr>
-          <td><img src="./public/books-page_files/22.jpg"><br>СИ И КОМПЬЮТЕРНАЯ ГРАФИКА</td>
-          <td>Ячейка 2</td>
-          <td>Ячейка 3</td>
+          <td>СИ И КОМПЬЮТЕРНАЯ ГРАФИКА</td>
+          <td>Автор</td>
+          <td>Год издания</td>
         </tr>
         <tr>
           <td>Ячейка 4</td>
@@ -34,16 +34,27 @@
           <td>Ячейка 6</td>
         </tr>
       </tbody>
-    </table><br>
+    </table>
+    <ul style="display: flex; list-style-type: none;">
+<li style="padding: 8px; margin: 8px; cursor: pointer; border-radius: 30%; border-color: red; border-style: solid;">1</li>
+<li style="padding: 8px;
+    margin: 8px;
+    cursor: pointer;"
+>2</li>
+<li style="padding: 8px;
+    margin: 8px;
+    cursor: pointer;
+">3</li>
+    </ul><hr>
 
     <button id="add">Добавить книгу в библиотеку</button><br>
     <form action="" method="post" style="border:2px;
     border-radius: 10px; border-color:blue; border-style: dashed; width: 600px; padding: 10px; display:none">
     <h2>Добавить книгу в библиотеку</h2>
     <input type="text" name="title" placeholder="Название книги" required><br><br>
-    <input type="text" name="author1" placeholder="Автор" required>
-    <input type="text" name="author2" placeholder="Автор">
-    <input type="text" name="author3" placeholder="Автор"><br><br>
+    <input type="text" name="authors" placeholder="Автор" required>
+    <input type="text" name="authors" placeholder="Автор">
+    <input type="text" name="authors" placeholder="Автор"><br><br>
     <input type="image" name="cover"><br><br>
     <textarea name="description" style="width: 75%; height: 100px;"></textarea>
     <button type="submit" style="margin-left: 35px;">Добавить</button>
