@@ -1,19 +1,22 @@
 import { Request, Response } from "express";
 import { getBooks, getLibraryLength } from "./library";
-import fs = require("fs");
-import path = require("path");
-import basicAuth = require("basic-auth");
+import { isAdmin, isValidNumber } from "../services/checks";
+import {
+  sendBadRequest,
+  sendBasicAuth,
+  sendLogout,
+  sendServerError,
+} from "../services/responses";
+import { getPageTemplate } from "../services/read-templates";
 
-const filePath = path.join(__dirname, "../templates/admin-page-template.html");
-
-async function fillAdminTemplate(template: string, offset: number) {
-  const tableRows = 5;
+async function fillAdminTemplate(template: string | undefined, offset: number): Promise<string | undefined> {
+  const tableRows: number = 5;
   const books = await getBooks(offset, tableRows);
   const libraryLength = await getLibraryLength();
   if (!books || !libraryLength) {
-    return "<h1>Something wrong!</h1>";
+    return;
   }
-  const pagination: number = Math.ceil(libraryLength / tableRows);
+  const pagination = Math.ceil(libraryLength / tableRows);
   let ul: string = "";
   const active: string = "background: gold";
   const li: string = `<li style="padding: 8px; margin: 8px; cursor: pointer; border-radius: 50%; %background%">
@@ -44,34 +47,26 @@ async function fillAdminTemplate(template: string, offset: number) {
     table += tr
       .replace(/%title%/g, book.title)
       .replace(/%author%/g, book.author)
+      .replace(/%year%/g, `${book.year}`)
       .replace(/%views%/g, `${book.views}`)
       .replace(/%wants%/g, `${book.wants}`)
       .replace(/%delete%/g, deleteBook(book.id));
   });
-  return template.replace("%book-info%", table).replace("%pagination%", ul);
+  return template?.replace("%book-info%", table).replace("%pagination%", ul);
 }
 
 export async function createAdminPage(req: Request, res: Response) {
   if (req.query.logout) {
-    return res.status(401).send("<h1>Logout is successfully complete</h1> ");
+    return sendLogout(res);
   }
-  const credentials = basicAuth(req);
-  if (
-    !credentials ||
-    credentials.name !== "admin" ||
-    credentials.pass !== "password"
-  ) {
-    return res
-      .status(401)
-      .set("WWW-Authenticate", 'Basic realm="Restricted Area"')
-      .send();
+  if (!isAdmin(req)) {
+    return sendBasicAuth(res);
   }
-  fs.readFile(filePath, "utf8", async (err, template) => {
-    if (err) {
-      console.log("Error reading file book-page-template.html");
-      return res.send("Something wrong");
-    }
-    const offset: number = req.query.offset ? +req.query.offset : 0;
-    res.send(await fillAdminTemplate(template, offset));
-  });
+  const template = await getPageTemplate("../view/admin-page-template.html");
+  const offset: number = req.query.offset ? +req.query.offset : 0;
+  if (!isValidNumber(offset, 0)) {
+    return sendBadRequest(res);
+  }
+  const adminPage = await fillAdminTemplate(template, offset);
+  adminPage ? res.send(adminPage) : sendServerError(res);
 }

@@ -1,31 +1,37 @@
 import { Request, Response } from "express";
-import { Book, getBook } from "./library";
-import fs = require("fs");
-import path = require("path");
-
-const filePath = path.join(__dirname, "../templates/book-page-template.html");
+import { getBook } from "./library";
+import { Book } from "../model/types";
+import { sendBadRequest, sendServerError } from "../services/responses";
+import { getPageTemplate } from "../services/read-templates";
+import { isValidNumber } from "../services/checks";
 
 export async function createBookPage(req: Request, res: Response) {
   if (!req.params.id) {
-    return res.send("<h1>Something wrong</h1>");
+    sendServerError(res);
+    return;
   }
   const bookId: number = +req.params.id;
+  if (!isValidNumber(bookId, 1)) {
+    return sendBadRequest(res);
+  }
   const book = await getBook(bookId);
   if (!book) {
-    return res.send("<h1>Something wrong</h1>");
+    return sendServerError(res);
   }
-  fs.readFile(filePath, "utf8", (err, template) => {
-    if (err) {
-      console.log("Error reading file book-page-template.html");
-      return res.send("<h1>Something wrong</h1>");
-    }
-    res.send(fillBookTemplate(template, book));
-  });
+  const template = await getPageTemplate("../view/book-page-template.html");
+  const content = fillBookTemplate(template, book);
+  content ? res.send(content) : sendServerError(res);
 }
 
-function fillBookTemplate(template: string, book: Book) {
+function fillBookTemplate(
+  template: string | undefined,
+  book: Book
+): string | undefined {
   return template
-    .replace(/%book-id%/g, `${book.id}`)
+    ?.replace(/%book-id%/g, `${book.id}`)
     .replace(/%book-title%/g, book.title)
-    .replace(/%book-author%/g, book.author);
+    .replace(/%book-author%/g, book.author)
+    .replace(/%book-pages%/g, `${book.pages}`)
+    .replace(/%book-year%/g, `${book.year}`)
+    .replace(/%book-description%/g, `${book.description}`);
 }

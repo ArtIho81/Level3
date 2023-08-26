@@ -1,0 +1,56 @@
+Добрий день, Романе.
+
+Щодо результатів роботи з багонутою функцією:
+
+Спочатку написав інтерфейс: 
+interface A {
+  [key: string]: undefined | { cvalue: undefined | string | number | A };
+} - перевірив із спойлером - був радий, що вийшло правильно.
+
+Далі, спираючись на нього виявив такі баги:
+
+1. В умові вказано значення 2022, а в функції використовується 2021
+2. У typeof використовується тип 'String', а не 'string'
+3. В тому ж typeof return містить строку '2021', а не число 2022
+4. Наступний рядок із if взагалі незрозуміло, що перевіряє - потрібно перевірити
+чи є тип elem.cvalue об'єктом і повернути цю ж функцію з аргументом elem.cvalue
+5. У дефолтному return не вистачає повернення 2022, якщо cvalue - underfined
+6. Помилка в слові length в умові цикла
+7. Після перетворення отримуємо масив з чисел - отже не може бути в елемента 
+властивості 
+8. Помилка в return: summ - це назва функції, потрібно повернути змінну sum.
+
+function summ(a) {
+    const x = Object.keys(a).map((k) => {
+        const elem = a[k];
+        if (typeof elem === undefined) return 2021 (1); 
+        if (typeof elem.cvalue === 'String'(2)) return +elem.cvalue || '2021'(3);
+        if (elem.cvalue.isBigObject !== undefined) return summ(elem)(4);
+        return elem.сvalue (5);
+    });
+    let sum = 0;
+    for (let i = 0; i < x.lenght(6); i++) {
+        sum += x[i].cvalue(7);
+    }
+    return summ(8);
+}
+
+Переробив цю функцію з урахуванням вищеописаного і вийшло:
+
+function summ(a: A): number {
+  const defaultValue = 2021
+  const x: number[] = Object.keys(a).map((k) => {
+    const elem = a[k];
+    if (typeof elem === undefined) return defaultValue;
+    if (typeof elem?.cvalue === "string") return +elem.cvalue || defaultValue;
+    if (typeof elem?.cvalue === "object") return summ(elem.cvalue);
+    return elem?.cvalue || defaultValue;
+  });
+  let sum = 0;
+  for (let i = 0; i < x.length; i++) {
+    sum += x[i];
+  }
+  return sum;
+}
+Знаки питання додав Typescript.
+Висновки: Typescript значно полегшує написання коду.

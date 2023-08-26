@@ -1,11 +1,14 @@
 import express = require("express");
-import { Router, Request, Response } from "express";
+import { Router } from "express";
 import path = require("path");
 import multer = require("multer");
-import { deleteSchedule } from "../schedules";
+import { deleteSchedule } from "../services/schedules";
 
 import { createAdminPage } from "../controllers/admin-page";
-import { addBookToLibrary, markDeletingBook } from "../controllers/library";
+import {
+  addBookToLibrary,
+  markDeletingBook,
+} from "../controllers/adminBooksActions";
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -18,26 +21,16 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 export const adminRouter: Router = express.Router();
+
 adminRouter.use(express.urlencoded());
 adminRouter.use(express.json());
 
-adminRouter.get(
-  "/admin",
-  async (req: Request, res: Response) => await createAdminPage(req, res)
-);
+adminRouter.get("/admin", createAdminPage);
 
 adminRouter.post(
   "/admin/api/v1/add_book",
   upload.single("cover"),
-  async (req: Request, res: Response) => await addBookToLibrary(req, res)
+  addBookToLibrary
 );
 
-adminRouter.post(
-  "/admin/api/v1/delete_book",
-  async (req: Request, res: Response): Promise<void> => {
-    const id: number | undefined = await markDeletingBook(req, res);
-    if (id) {
-      deleteSchedule(id);
-    }
-  }
-);
+adminRouter.post("/admin/api/v1/delete_book", markDeletingBook, deleteSchedule);

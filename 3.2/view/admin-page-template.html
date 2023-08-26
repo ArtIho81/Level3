@@ -14,6 +14,7 @@
     <title>Library Admin</title>
   </head>
   <body>
+    <section>
     <h1>
       Библиотека
       <a href="./admin/?logout=true">
@@ -52,15 +53,19 @@
       "
     >
       <h2>Добавить книгу в библиотеку</h2>
+      <input type="text" name="title" placeholder="Название книги" required />
+      <input type="number" name="year" placeholder="Год издания" required />
       <input
-        type="text"
-        name="title"
-        placeholder="Название книги"
+        type="number"
+        name="pages"
+        placeholder="Количество страниц"
         required
-      /><br /><br />
-      <input type="text" name="authors" placeholder="Автор" required />
-      <!-- <input type="text" name="authors" placeholder="Автор" />
-      <input type="text" name="authors" placeholder="Автор" /><br /><br /> -->
+      />
+      <br /><br />
+      <div id="authors">
+        <input type="text" name="authors" placeholder="Автор" required />
+        <button id="add-author-input">Еще автор</button>
+      </div>
       <input type="file" name="cover" accept="image/*" /><br /><br />
       <textarea name="description" style="width: 75%; height: 100px"></textarea>
       <button type="submit" style="margin-left: 35px">Добавить</button>
@@ -70,6 +75,35 @@
         document.querySelector("form").style.display = "block";
         document.querySelector("#add").style.display = "none";
       });
+      document
+        .getElementById("add-author-input")
+        .addEventListener("click", (e) => {
+          e.preventDefault();
+          if (document.querySelector("input[name='title']").value !== "") {
+            const checkEmptyInput = () => {
+              const authors = document.querySelectorAll(
+                "input[name='authors']"
+              );
+              let filledInput = true;
+              authors.forEach((item) => {
+                if (item.value === "") {
+                  filledInput = false;
+                  return;
+                }
+              });
+              return filledInput;
+            };
+
+            if (checkEmptyInput()) {
+              const input = document.createElement("input");
+              input.setAttribute("type", "text");
+              input.setAttribute("name", "authors");
+              input.setAttribute("placeholder", "Автор");
+              document.getElementById("authors").appendChild(input);
+            }
+          }
+        });
+
       document.getElementById("logout").addEventListener("click", () => {});
 
       document.querySelector("form").addEventListener("submit", (event) => {
@@ -85,6 +119,7 @@
               console.log(
                 `Книга ${event.target.title.value} успешно добавлена`
               );
+              window.location.reload(true);
             } else {
               console.log(
                 `Книга ${event.target.title.value} уже есть в библиотеке`
@@ -105,11 +140,12 @@
           })
             .then((response) => response.json())
             .then((data) => {
-                console.log(`Книга ${event.target.id} успешно удалена`)
-                //window.location.replace("./admin")
+              console.log(`Книга ${event.target.id} успешно удалена`);
+              window.location.reload(true);
             });
         })
       );
     </script>
+    </section>
   </body>
 </html>

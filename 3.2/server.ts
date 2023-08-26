@@ -1,6 +1,6 @@
 import express = require("express");
 import path = require("path");
-import { startSchedules } from "./schedules";
+import { startSchedules } from "./services/schedules";
 import { userRouter } from "./routes/user-routes";
 import { adminRouter } from "./routes/admin-routes";
 

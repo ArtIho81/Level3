@@ -9,16 +9,8 @@ export const userRouter: Router = express.Router();
 userRouter.use(express.urlencoded());
 userRouter.use(express.json());
 
-userRouter.get(
-  "/",
-  async (req: Request, res: Response) => await createBooksPage(req, res)
-);
+userRouter.get("/", createBooksPage);
 
-userRouter.get(
-  "/book/:id",
-  async (req: Request, res: Response) => await createBookPage(req, res)
-);
+userRouter.get("/book/:id", createBookPage);
 
-userRouter.post("/api/v1/", async (req: Request, res: Response) => {
-  await increaseWants(req, res);
-});
+userRouter.post("/api/v1/", increaseWants);

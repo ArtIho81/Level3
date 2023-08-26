@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
-import { getBooks, getLibraryLength } from "./library";
-import fs = require ("fs");
-import path = require("path");
+import { getBooks, getLibraryLength, getSearchBooks } from "./library";
+import { sendBadRequest, sendServerError } from "../services/responses";
+import { getPageTemplate } from "../services/read-templates";
+import { isValidNumber } from "../services/checks";
 
-const filePath = path.join(__dirname, "../templates/books-page-template.html");
-
-const booksPerPage: number = 3;
+const booksPerPage: number = 6;
+const offsetLimit: number = 20;
 const bookTemplate: string = `<div data-book-id="%book-id%" class="book_item col-xs-6 col-sm-3 col-md-2 col-lg-2">
   <div class="book">
     <a href="/book/%book-id%"><img src=".././img/%book-id%.jpg" alt="%book-title%">
@@ -20,31 +20,49 @@ const bookTemplate: string = `<div data-book-id="%book-id%" class="book_item col
   </div>
 </div>`;
 
-export async function createBooksPage(req: Request, res: Response) {
-  let offset: number = req.query.offset ? +req.query.offset : 0;
-  offset = offset >= 20 ? 20 : offset;
-  const books = await createContent(offset);
-  const libraryLength = await getLibraryLength();
-  if (!books || !libraryLength) {
-    return res.send("<h1>Something wrong</h1>")
-  }
-  const buttons: string = addPaginationButtons(offset, libraryLength);
-  fs.readFile(filePath, "utf8", (err, template) => {
-    if (err) {
-      console.log("Error reading file books-page-template.html");
-      return res.send("Something wrong");
-    }
-    const filledTemplate: string = template
-      .replace(/<div>%books%<\/div>/g, books)
-      .replace(/<div>%pagination buttons%<\/div>/g, buttons);
+function getSearchValue(req: Request): string | undefined {
+  const searchQuery = req.query.search?.valueOf();
+  return (Array.isArray(searchQuery) ? searchQuery[0] : searchQuery)
+    ?.replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
 
-    res.send(filledTemplate);
-  });
+function defineOffset(req: Request): number {
+  const offset = req.query.offset ? +req.query.offset : 0;
+  return offset >= offsetLimit ? offsetLimit : offset;
+}
+
+export async function createBooksPage(req: Request, res: Response) {
+  const search = getSearchValue(req);
+  const offset = search ? -1 : defineOffset(req);
+  if (!isValidNumber(offset, 0)) {
+    return sendBadRequest(res);
+  }
+  const books = await createContent(offset, search);
+  const libraryLength = await getLibraryLength();
+
+  if (!books || !libraryLength) {
+    return sendServerError(res);
+  }
+  const buttons = addPaginationButtons(offset, libraryLength);
+  const searchResult = search ? `<h2>Результат поиска по ${search}</h2>` : "";
+
+  const template = await getPageTemplate("../view/books-page-template.html");
+
+  const content = template
+    ?.replace(/<h2>%search%<\/h2>/g, searchResult)
+    .replace(/<div>%books%<\/div>/g, books)
+    .replace(/<div>%pagination buttons%<\/div>/g, buttons);
+
+  content ? res.send(content) : sendServerError(res);
 }
 
 function addPaginationButtons(offset: number, libraryLength: number): string {
-  let nextButton: string = "";
-  let prevButton: string = "";
+  let nextButton: string = "",
+    prevButton: string = "";
+
+  /* No buttons on search page */
+  if (offset === -1) return "";
 
   if (offset > 0) {
     prevButton = `<a href="/?offset=${offset - 1}">
@@ -62,15 +80,22 @@ function addPaginationButtons(offset: number, libraryLength: number): string {
     </div></center>`;
 }
 
-async function createContent(offset: number): Promise<string | undefined> {
-  const books = await getBooks(offset, booksPerPage);
-  if (books) {
-    return books.reduce((acc, book) => {
-      acc += bookTemplate
-        .replace(/%book-id%/g, `${book.id}`)
-        .replace(/%book-title%/g, book.title)
-        .replace(/%book-author%/g, book.author);
-      return acc;
-    }, "");
-  }
+/* Returns HTML  */
+async function createContent(
+  offset: number,
+  search: string | undefined
+): Promise<string | undefined> {
+  const books = search
+    ? await getSearchBooks(search)
+    : await getBooks(offset, booksPerPage);
+
+  return books?.length === 0
+    ? "Ничего не нашлось"
+    : books?.reduce((acc, book) => {
+        acc += bookTemplate
+          .replace(/%book-id%/g, `${book.id}`)
+          .replace(/%book-title%/g, book.title)
+          .replace(/%book-author%/g, book.author);
+        return acc;
+      }, "");
 }

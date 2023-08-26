@@ -82,12 +82,13 @@ interface A {
 
 function summ(a: A): number {
   const defaultValue = 2021
-  const x: number[] = Object.keys(a).map((k) => {
+  const x = Object.keys(a).map((k) => {
     const elem = a[k];
-    if (typeof elem === undefined) return defaultValue;
+    //if (typeof elem === "undefined") return defaultValue;
+    if (elem?.cvalue === undefined ) return defaultValue;
     if (typeof elem?.cvalue === "string") return +elem.cvalue || defaultValue;
     if (typeof elem?.cvalue === "object") return summ(elem.cvalue);
-    return elem?.cvalue || defaultValue;
+    return elem?.cvalue
   });
   let sum = 0;
   for (let i = 0; i < x.length; i++) {

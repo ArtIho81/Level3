@@ -4,5 +4,5 @@ CREATE TABLE IF NOT EXISTS books (
   author VARCHAR(255) NOT NULL,
   views INT,
   wants INT,
-  isDeleted INT NOT NULL
+  isDeleted BOOLEAN NOT NULL
 );
