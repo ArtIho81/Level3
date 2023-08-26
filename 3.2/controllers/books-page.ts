@@ -35,7 +35,7 @@ function defineOffset(req: Request): number {
 export async function createBooksPage(req: Request, res: Response) {
   const search = getSearchValue(req);
   const offset = search ? -1 : defineOffset(req);
-  if (!isValidNumber(offset, 0)) {
+  if (!search && !isValidNumber(offset, 0)) {
     return sendBadRequest(res);
   }
   const books = await createContent(offset, search);

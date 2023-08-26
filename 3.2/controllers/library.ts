@@ -1,22 +1,6 @@
 import { Request, Response } from "express";
 import { pool } from "../db/dbconfig";
-import fs = require("fs");
-import path = require("path");
 import { Book } from "../model/types";
-
-// export interface Book extends RowDataPacket{
-//   id: number;
-//   title: string;
-//   author: string;
-// }
-// export interface BookInfo extends Book {
-//   description?: string;
-//   year?: number;
-//   pages?: number;
-//   views: number;
-//   wants: number;
-//   is_deleted: 0 | 1;
-// }
 
 export async function getLibraryLength(): Promise<number | undefined> {
   try {
