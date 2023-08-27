@@ -8,8 +8,12 @@ import {
   sendServerError,
 } from "../services/responses";
 import { getPageTemplate } from "../services/read-templates";
+import basicAuth = require("basic-auth");
 
-async function fillAdminTemplate(template: string | undefined, offset: number): Promise<string | undefined> {
+async function fillAdminTemplate(
+  template: string | undefined,
+  offset: number
+): Promise<string | undefined> {
   const tableRows: number = 5;
   const books = await getBooks(offset, tableRows);
   const libraryLength = await getLibraryLength();
@@ -59,8 +63,8 @@ export async function createAdminPage(req: Request, res: Response) {
   if (req.query.logout) {
     return sendLogout(res);
   }
-  if (!isAdmin(req)) {
-    return sendBasicAuth(res);
+  if (!(await isAdmin(req))) {
+    return sendBasicAuth(res)
   }
   const template = await getPageTemplate("../view/admin-page-template.html");
   const offset: number = req.query.offset ? +req.query.offset : 0;

@@ -7,7 +7,7 @@ export function sendBadRequest(res: Response): void {
   res.status(400).send("<h1>Bad request</h1>");
 }
 export function sendLogout(res: Response) {
-  res.status(200).send("<h1>Logout is successfully complete</h1> ");
+  res.status(401).send("<h1>Logout is successfully complete</h1> ");
 }
 export function sendBasicAuth(res: Response) {
   res

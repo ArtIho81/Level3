@@ -15,137 +15,151 @@
   </head>
   <body>
     <section>
-    <h1>
-      Библиотека
-      <a href="./admin/?logout=true">
-        <button id="logout">Выйти</button>
-      </a>
-    </h1>
-    <table style="border: 1px; border-color: black; border-style: solid">
-      <thead>
-        <tr>
-          <th>Название книги</th>
-          <th>Авторы</th>
-          <th>Год издания</th>
-          <th>Действие</th>
-          <th>Просмотры</th>
-          <th>Хотели почитать</th>
-        </tr>
-      </thead>
-      <tbody>
-        %book-info%
-      </tbody>
-    </table>
-    <ul style="display: flex; list-style-type: none">
-      %pagination%
-    </ul>
+      <h1>
+        Библиотека
+        <a href="/admin/?logout=true">
+          <button id="logout">Выйти</button>
+        </a>
+      </h1>
+      <table style="border: 1px; border-color: black; border-style: solid">
+        <thead>
+          <tr>
+            <th>Название книги</th>
+            <th>Авторы</th>
+            <th>Год издания</th>
+            <th>Действие</th>
+            <th>Просмотры</th>
+            <th>Хотели почитать</th>
+          </tr>
+        </thead>
+        <tbody>
+          %book-info%
+        </tbody>
+      </table>
+      <ul style="display: flex; list-style-type: none">
+        %pagination%
+      </ul>
 
-    <button id="add">Добавить книгу в библиотеку</button><br />
-    <form
-      style="
-        border: 2px;
-        border-radius: 10px;
-        border-color: blue;
-        border-style: dashed;
-        width: 600px;
-        padding: 10px;
-        display: none;
-      "
-    >
-      <h2>Добавить книгу в библиотеку</h2>
-      <input type="text" name="title" placeholder="Название книги" required />
-      <input type="number" name="year" placeholder="Год издания" required />
-      <input
-        type="number"
-        name="pages"
-        placeholder="Количество страниц"
-        required
-      />
-      <br /><br />
-      <div id="authors">
-        <input type="text" name="authors" placeholder="Автор" required />
-        <button id="add-author-input">Еще автор</button>
-      </div>
-      <input type="file" name="cover" accept="image/*" /><br /><br />
-      <textarea name="description" style="width: 75%; height: 100px"></textarea>
-      <button type="submit" style="margin-left: 35px">Добавить</button>
-    </form>
-    <script>
-      document.querySelector("#add").addEventListener("click", () => {
-        document.querySelector("form").style.display = "block";
-        document.querySelector("#add").style.display = "none";
-      });
-      document
-        .getElementById("add-author-input")
-        .addEventListener("click", (e) => {
-          e.preventDefault();
-          if (document.querySelector("input[name='title']").value !== "") {
-            const checkEmptyInput = () => {
-              const authors = document.querySelectorAll(
-                "input[name='authors']"
-              );
-              let filledInput = true;
-              authors.forEach((item) => {
-                if (item.value === "") {
-                  filledInput = false;
-                  return;
-                }
-              });
-              return filledInput;
-            };
-
-            if (checkEmptyInput()) {
-              const input = document.createElement("input");
-              input.setAttribute("type", "text");
-              input.setAttribute("name", "authors");
-              input.setAttribute("placeholder", "Автор");
-              document.getElementById("authors").appendChild(input);
-            }
-          }
+      <button id="add">Добавить книгу в библиотеку</button><br />
+      <form
+        style="
+          border: 2px;
+          border-radius: 10px;
+          border-color: blue;
+          border-style: dashed;
+          width: 600px;
+          padding: 10px;
+          display: none;
+        "
+      >
+        <h2>Добавить книгу в библиотеку</h2>
+        <input type="text" name="title" placeholder="Название книги" required />
+        <input type="number" name="year" placeholder="Год издания" required />
+        <input
+          type="number"
+          name="pages"
+          placeholder="Количество страниц"
+          required
+        />
+        <br /><br />
+        <div id="authors">
+          <input type="text" name="authors" placeholder="Автор" required />
+          <button id="add-author-input">Еще автор</button>
+        </div>
+        <input type="file" name="cover" accept="image/*" /><br /><br />
+        <textarea
+          name="description"
+          style="width: 75%; height: 100px"
+        ></textarea>
+        <button type="submit" style="margin-left: 35px">Добавить</button>
+      </form>
+      <script>
+        document.querySelector("#add").addEventListener("click", () => {
+          document.querySelector("form").style.display = "block";
+          document.querySelector("#add").style.display = "none";
         });
 
-      document.getElementById("logout").addEventListener("click", () => {});
+        // document.getElementById("logout").addEventListener("click", () => {
+        //   fetch("/admin/?logout=true", {
+        //     headers: {
+        //       'Authorization': "Basic none:none",
+        //       "X-Requested-With": "XMLHttpRequest",
+        //     },
+        //   })
+        //     .then(() => {
+        //       window.location.assign("/");
+        //     })
+        //     .catch((err) => console.error(err));
+        // });
+        document
+          .getElementById("add-author-input")
+          .addEventListener("click", (e) => {
+            e.preventDefault();
+            if (document.querySelector("input[name='title']").value !== "") {
+              const checkEmptyInput = () => {
+                const authors = document.querySelectorAll(
+                  "input[name='authors']"
+                );
+                let filledInput = true;
+                authors.forEach((item) => {
+                  if (item.value === "") {
+                    filledInput = false;
+                    return;
+                  }
+                });
+                return filledInput;
+              };
 
-      document.querySelector("form").addEventListener("submit", (event) => {
-        event.preventDefault();
-        const formData = new FormData(event.target);
-        fetch("/admin/api/v1/add_book", {
-          method: "POST",
-          body: formData,
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.ok) {
-              console.log(
-                `Книга ${event.target.title.value} успешно добавлена`
-              );
-              window.location.reload(true);
-            } else {
-              console.log(
-                `Книга ${event.target.title.value} уже есть в библиотеке`
-              );
+              if (checkEmptyInput()) {
+                const input = document.createElement("input");
+                input.setAttribute("type", "text");
+                input.setAttribute("name", "authors");
+                input.setAttribute("placeholder", "Автор");
+                document.getElementById("authors").appendChild(input);
+              }
             }
           });
-      });
 
-      document.querySelectorAll(".delete_book").forEach((link) =>
-        link.addEventListener("click", (event) => {
+        document.querySelector("form").addEventListener("submit", (event) => {
           event.preventDefault();
-          fetch("/admin/api/v1/delete_book", {
+          const formData = new FormData(event.target);
+          fetch("/admin/api/v1/add_book", {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ id: link.id }),
+            body: formData,
           })
             .then((response) => response.json())
             .then((data) => {
-              console.log(`Книга ${event.target.id} успешно удалена`);
-              window.location.reload(true);
+              if (data.ok) {
+                console.log(
+                  `Книга ${event.target.title.value} успешно добавлена`
+                );
+                window.location.reload(true);
+              } else {
+                console.log(
+                  `Книга ${event.target.title.value} уже есть в библиотеке`
+                );
+              }
             });
-        })
-      );
-    </script>
+        });
+
+        document.querySelectorAll(".delete_book").forEach((link) =>
+          link.addEventListener("click", (event) => {
+            event.preventDefault();
+            fetch("/admin/api/v1/delete_book", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ id: link.id }),
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                console.log(`Книга ${event.target.id} успешно удалена`);
+                window.location.reload(true);
+              });
+          })
+        );
+      </script>
     </section>
   </body>
 </html>
